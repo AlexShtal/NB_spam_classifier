@@ -6,7 +6,7 @@ import math
 class GaussianNB:
     word_prob = []
 
-    def load(self, path: str, encoding: str, text_column_name: str, spam_column_name: str):
+    def load(self, path: str, encoding: str, text_column_name: str = None, spam_column_name: str = None):
         dataset = pd.read_csv(path, encoding=encoding)
 
         df = pd.DataFrame(data={"text": [i for i in dataset[text_column_name]],
@@ -19,7 +19,7 @@ class GaussianNB:
 
         self.word_probs = self.word_probs(freq, all_spam, all_not_spam)
 
-    def predict(self, message):
+    def predict(self, message, only_spam_prob=False, ):
         message_words = self.tokenize(message)
         spam_prob = not_spam_prob = 0.0
 
@@ -33,9 +33,13 @@ class GaussianNB:
 
         e_spam_prob = math.exp(spam_prob)
         e_not_spam_prob = math.exp(not_spam_prob)
-        prob = e_spam_prob / (e_spam_prob + e_not_spam_prob)
+        spam_prob = e_spam_prob / (e_spam_prob + e_not_spam_prob)
+        ham_prob = e_not_spam_prob / (e_spam_prob + e_not_spam_prob)
 
-        return round(prob, 5)
+        if only_spam_prob:
+            return spam_prob
+        else:
+            return "Spam probability: " + str(spam_prob) + "\nNot spam probability: " + str(ham_prob)
 
     def tokenize(self, message):
         message_lower = message.lower()
